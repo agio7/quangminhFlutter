@@ -209,10 +209,17 @@ class ApiService {
         timestamp: DateTime.now(),
       ));
 
-      if (response.statusCode == 200) {
-        return LoginResponse.fromJson(json.decode(response.body) as Map<String, dynamic>);
+      // Accept 200 or 201 as success responses
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        // Try to decode and validate token presence
+        final Map<String, dynamic> decoded = json.decode(response.body) as Map<String, dynamic>;
+        if (!decoded.containsKey('token') || decoded['token'] == null || decoded['token'].toString().isEmpty) {
+          throw Exception('Login succeeded but token missing in response: ${response.body}');
+        }
+        return LoginResponse.fromJson(decoded);
       } else {
-        throw Exception('Login failed: ${response.statusCode}');
+        // Include response body in the exception to help debugging
+        throw Exception('Login failed: ${response.statusCode} - ${response.body}');
       }
     } catch (e) {
       _addLog(ApiLog(
@@ -224,6 +231,50 @@ class ApiService {
         error: e.toString(),
       ));
       throw Exception('Error during login: $e');
+    }
+  }
+
+  Future<User> register(Map<String, dynamic> userData) async {
+    final url = '${AppConstants.baseUrl}${AppConstants.usersEndpoint}';
+    final requestBody = json.encode(userData);
+    lastMethod = 'POST';
+    lastUrl = url;
+    lastRequestBody = requestBody;
+
+    try {
+      final response = await http.post(
+        Uri.parse(url),
+        headers: {'Content-Type': 'application/json'},
+        body: requestBody,
+      );
+      lastStatusCode = response.statusCode;
+      lastResponseBody = response.body;
+
+      _addLog(ApiLog(
+        method: 'POST',
+        url: url,
+        headers: {'Content-Type': 'application/json'},
+        requestBody: requestBody,
+        statusCode: response.statusCode,
+        responseBody: response.body,
+        timestamp: DateTime.now(),
+      ));
+
+      if (response.statusCode == 200) {
+        return User.fromJson(json.decode(response.body) as Map<String, dynamic>);
+      } else {
+        throw Exception('Đăng ký thất bại: ${response.statusCode}');
+      }
+    } catch (e) {
+      _addLog(ApiLog(
+        method: 'POST',
+        url: url,
+        headers: {'Content-Type': 'application/json'},
+        requestBody: requestBody,
+        timestamp: DateTime.now(),
+        error: e.toString(),
+      ));
+      throw Exception('Lỗi khi đăng ký: $e');
     }
   }
 
@@ -271,4 +322,3 @@ class ApiService {
     }
   }
 }
-

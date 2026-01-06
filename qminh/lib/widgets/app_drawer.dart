@@ -6,6 +6,9 @@ import '../screens/categories_screen.dart';
 import '../screens/add_product_screen.dart';
 import '../screens/console_screen.dart';
 import '../screens/settings_screen.dart';
+import '../screens/login_screen.dart';
+import '../screens/login_screen.dart';
+import '../main.dart';
 
 class AppDrawer extends StatelessWidget {
   const AppDrawer({super.key});
@@ -113,6 +116,11 @@ class AppDrawer extends StatelessWidget {
               Navigator.pop(context);
               await authProvider.logout();
               if (context.mounted) {
+                // Điều hướng về màn hình đăng nhập
+                Navigator.of(context).pushAndRemoveUntil(
+                  MaterialPageRoute(builder: (_) => const LoginScreen()),
+                  (route) => false,
+                );
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(content: Text('Đã đăng xuất')),
                 );

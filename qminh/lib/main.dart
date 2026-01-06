@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'constants/app_constants.dart';
 import 'providers/store_provider.dart';
 import 'providers/cart_provider.dart';
@@ -10,6 +9,7 @@ import 'screens/pos_screen.dart';
 import 'screens/products_screen.dart';
 import 'screens/orders_screen.dart';
 import 'screens/cart_screen.dart';
+import 'screens/login_screen.dart';
 import 'widgets/app_drawer.dart';
 import 'widgets/cart_badge.dart';
 
@@ -46,8 +46,56 @@ class MyApp extends StatelessWidget {
           useMaterial3: true,
         ),
         themeMode: ThemeMode.system,
-        home: const MainShell(),
+        initialRoute: '/',
+        routes: {
+          '/': (context) => const AuthWrapper(),
+        },
       ),
+    );
+  }
+}
+
+class AuthWrapper extends StatefulWidget {
+  const AuthWrapper({super.key});
+
+  @override
+  State<AuthWrapper> createState() => _AuthWrapperState();
+}
+
+class _AuthWrapperState extends State<AuthWrapper> {
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkAuth();
+  }
+
+  Future<void> _checkAuth() async {
+    // Đợi AuthProvider load token từ SharedPreferences
+    await Future.delayed(const Duration(milliseconds: 100));
+    if (mounted) {
+      setState(() => _isLoading = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_isLoading) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    return Consumer<AuthProvider>(
+      builder: (context, authProvider, _) {
+        // Kiểm tra token khi app khởi động
+        if (authProvider.isAuthenticated) {
+          return const MainShell();
+        } else {
+          return const LoginScreen();
+        }
+      },
     );
   }
 }
