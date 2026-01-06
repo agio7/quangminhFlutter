@@ -26,9 +26,9 @@ class ApiService {
 
   void _addLog(ApiLog log) {
     _apiLogs.insert(0, log); // Add to beginning
-    // Keep only last 50 logs
-    if (_apiLogs.length > 50) {
-      _apiLogs.removeRange(50, _apiLogs.length);
+    // Keep only last 20 logs to save memory
+    if (_apiLogs.length > 20) {
+      _apiLogs.removeRange(20, _apiLogs.length);
     }
   }
 

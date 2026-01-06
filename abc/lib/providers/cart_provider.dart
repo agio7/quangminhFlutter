@@ -49,16 +49,6 @@ class CartProvider with ChangeNotifier {
   bool checkout() {
     if (_items.isEmpty) return false;
 
-    // Print order to console
-    print('=== CHECKOUT ORDER ===');
-    print('Total Items: $itemCount');
-    print('Total Amount: \$${totalAmount.toStringAsFixed(2)}');
-    print('Items:');
-    for (var item in _items.values) {
-      print('  - ${item.product.title} x${item.quantity} = \$${item.totalPrice.toStringAsFixed(2)}');
-    }
-    print('=====================');
-
     clearCart();
     return true;
   }

@@ -24,7 +24,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (_) => StoreProvider()..fetchAllData()),
+        ChangeNotifierProvider(create: (_) => StoreProvider()),
         ChangeNotifierProvider(create: (_) => CartProvider()),
         ChangeNotifierProvider(create: (_) => AuthProvider()),
       ],
@@ -55,46 +55,17 @@ class MyApp extends StatelessWidget {
   }
 }
 
-class AuthWrapper extends StatefulWidget {
+class AuthWrapper extends StatelessWidget {
   const AuthWrapper({super.key});
 
   @override
-  State<AuthWrapper> createState() => _AuthWrapperState();
-}
-
-class _AuthWrapperState extends State<AuthWrapper> {
-  bool _isLoading = true;
-
-  @override
-  void initState() {
-    super.initState();
-    _checkAuth();
-  }
-
-  Future<void> _checkAuth() async {
-    // Đợi AuthProvider load token từ SharedPreferences
-    await Future.delayed(const Duration(milliseconds: 100));
-    if (mounted) {
-      setState(() => _isLoading = false);
-    }
-  }
-
-  @override
   Widget build(BuildContext context) {
-    if (_isLoading) {
-      return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
-      );
-    }
-
     return Consumer<AuthProvider>(
       builder: (context, authProvider, _) {
-        // Kiểm tra token khi app khởi động
         if (authProvider.isAuthenticated) {
           return const MainShell();
-        } else {
-          return const LoginScreen();
         }
+        return const LoginScreen();
       },
     );
   }
@@ -119,8 +90,6 @@ class _MainShellState extends State<MainShell> {
 
   @override
   Widget build(BuildContext context) {
-    final cartProvider = Provider.of<CartProvider>(context);
-
     return Scaffold(
       appBar: AppBar(
         backgroundColor: const Color(AppConstants.primaryColorValue),
@@ -133,22 +102,21 @@ class _MainShellState extends State<MainShell> {
           ),
         ),
         actions: [
-          CartBadge(
-            count: cartProvider.itemCount,
-            onTap: () {
-              Navigator.push(
+          Selector<CartProvider, int>(
+            selector: (_, cart) => cart.itemCount,
+            builder: (context, itemCount, child) => CartBadge(
+              count: itemCount,
+              onTap: () => Navigator.push(
                 context,
                 MaterialPageRoute(builder: (_) => const CartScreen()),
-              );
-            },
-            child: IconButton(
-              icon: const Icon(Icons.shopping_cart),
-              onPressed: () {
-                Navigator.push(
+              ),
+              child: IconButton(
+                icon: const Icon(Icons.shopping_cart),
+                onPressed: () => Navigator.push(
                   context,
                   MaterialPageRoute(builder: (_) => const CartScreen()),
-                );
-              },
+                ),
+              ),
             ),
           ),
           const Padding(

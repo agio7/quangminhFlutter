@@ -2,9 +2,11 @@ import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../constants/app_constants.dart';
 import '../services/api_service.dart';
+import '../services/file_user_service.dart';
 
 class AuthProvider with ChangeNotifier {
   final ApiService _apiService = ApiService();
+  final FileUserService _fileUserService = FileUserService();
   String? _token;
   bool _isLoading = false;
   String? _error;
@@ -34,6 +36,22 @@ class AuthProvider with ChangeNotifier {
     notifyListeners();
 
     try {
+      // Thử đăng nhập với user từ file trước
+      final isFileUser = await _fileUserService.validateUser(
+        username: username,
+        password: password,
+      );
+
+      if (isFileUser) {
+        _token = 'local-user-$username';
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString(AppConstants.authTokenKey, _token!);
+        _isLoading = false;
+        notifyListeners();
+        return true;
+      }
+
+      // Nếu không phải file user, thử API
       final response = await _apiService.login(username, password);
       final token = response.token;
 
