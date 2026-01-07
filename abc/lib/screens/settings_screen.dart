@@ -127,7 +127,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     ListTile(
                       leading: const Icon(Icons.check_circle, color: Colors.green),
                       title: const Text('Đã đăng nhập'),
-                      subtitle: Text('Token: ${authProvider.token?.substring(0, 20)}...'),
+                      subtitle: Text('Token: ${authProvider.token != null ? (authProvider.token!.length > 20 ? '${authProvider.token!.substring(0, 20)}...' : authProvider.token!) : 'N/A'}'),
                     )
                   else
                     Column(
